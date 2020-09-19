@@ -246,9 +246,13 @@ class TorchModel(SINGAEasyModel):
         if self._knobs.get("enable_gm_prior_regularization"):
             self._gm_optimizer = GMOptimizer()
             for name, f in self._model.named_parameters():
+                if torch.cuda.is_available():
+                    fdata = f.data.to(self.device).cpu().numpy()
+                else:
+                    fdata = f.data.to(self.device).numpy()
                 self._gm_optimizer.gm_register(
                     name,
-                    f.data.to(self.device).numpy(),
+                    fdata,
                     model_name="PyVGG",
                     hyperpara_list=[
                         self._knobs.get("gm_prior_regularization_a"),
